@@ -9,9 +9,6 @@
 #ifndef __BMP280_HEADER__ 
 #define __BMP280_HEADER__  
 
-#define BMP280_DEBUG		(0)			/*IF set "1" enable debug , print information*
-
-
 /*
 	******************************************** measurement time ********************************************
 	Oversampling setting		Pressure sampling		Temperature			sampling	Measurement time[ms]			Measurement rate[HZ]
@@ -23,14 +20,13 @@
 	******************************************** measurement time ********************************************
 */
 
-
 /*--------------------------------- Define SLAVE ADDRESS -------------------------------------*/
 /* BMP280 SLAVE ADDRESS*/
-	#define BMP280_ADDR_PIN 	 		(0)			/*PIN5 SDO(ADDR) connect  "0" GND or "1" Vcc*/
+	#define BMP280_ADDR_PIN 	 			(0)			/*PIN5 SDO(ADDR) connect  "0" GND or "1" Vcc*/
 #if (BMP280_ADDR_PIN == 1)
-	#define BMP280_SLAVE_ADDRESS     	(0XEE)
+	#define BMP280_SLAVE_ADDRESS     	(0xEE)
 #else if (BMP280_ADDR_PIN == 0)
-	#define BMP280_SLAVE_ADDRESS     	(0XEC)
+	#define BMP280_SLAVE_ADDRESS     	(0xEC)
 #endif
 /*--------------------------------- Define SLAVE ADDRESS -------------------------------------*/
 
@@ -64,7 +60,7 @@ typedef struct BMP280_PRESS_TEMPREATURE_DATA_S
 	INT32S press_data;			/*from 0xF7,0xF8,0xF9(7:4) */
 	INT32S temperature_data;	/*from 0xFA,0xFB,0xFC(7:4) */
 	FLOAT final_press;			/*final pressure data */
-	FLOAT final_temperature;			/*final temperature data */
+	FLOAT final_temperature;	/*final temperature data */
 
 }BMP280_PRESS_TEMPREATURE_DATA;
 /* ------------- DEFINE BMP280 STRUCT  ------------*/
@@ -73,7 +69,7 @@ typedef struct BMP280_PRESS_TEMPREATURE_DATA_S
 
 /*--------------------------------------------------------------------------*/
 /*set register(0xF4) bit7:5 : temperature mode*/
-#define BMP280_TEMP_SKIP					(0x00<<5)	/*SKIP measurement temperautre */
+#define BMP280_TEMP_SKIP						(0x00<<5)	/*SKIP measurement temperautre */
 #define BMP280_TEMP_16BIT					(0x01<<5)	/*resolution:16bit ,oversampling:x1*/
 #define BMP280_TEMP_17BIT					(0x02<<5)	/*resolution:17bit ,oversampling:x2*/
 #define BMP280_TEMP_18BIT					(0x03<<5)	/*resolution:18bit ,oversampling:x4*/
@@ -89,7 +85,7 @@ typedef struct BMP280_PRESS_TEMPREATURE_DATA_S
 #define BMP280_PRESS_20BIT					(0x05<<2)	/*resolution:20bit ,oversampling:x16*/
 
 /*set register(0xF4) bit1:0 : system mode*/
-#define BMP280_SYS_SLEEP_MODE			(0x00<<0)	/*system mode in sleep mode*/
+#define BMP280_SYS_SLEEP_MODE				(0x00<<0)	/*system mode in sleep mode*/
 #define BMP280_SYS_FORCED_MODE			(0x01<<0)	/*system mode in FORCED mode , measurement once & turn sleep mode*/
 #define BMP280_SYS_NORMAL_MODE			(0x03<<0)	/*system mode in Normal , continue measurement*/
 /*--------------------------------------------------------------------------*/
@@ -125,11 +121,11 @@ typedef struct BMP280_PRESS_TEMPREATURE_DATA_S
 /**** for function (BMP280_SET_MEASUREMENT_SYS_MODE)*/
 #define BMP280_PRESS_MODE					(BMP280_PRESS_20BIT)
 /**** for function (BMP280_SET_MEASUREMENT_SYS_MODE)*/
-#define BMP280_SYS_MODE					(BMP280_SYS_FORCED_MODE)
+#define BMP280_SYS_MODE						(BMP280_SYS_FORCED_MODE)
 
 /*****************************/
 /* SET the BMP280 operation mode */
-#define BMP280_OP_MODE_SET				(BMP280_TEMPERAUTRE_MODE|BMP280_PRESS_MODE|BMP280_SYS_MODE)
+#define BMP280_OP_MODE_SET					(BMP280_TEMPERAUTRE_MODE|BMP280_PRESS_MODE|BMP280_SYS_MODE)
 /*****************************/
 
 /* ------------- DEFINE BMP280 Parameter ------------- */
@@ -146,7 +142,7 @@ typedef struct BMP280_PRESS_TEMPREATURE_DATA_S
 /*bit [3:0] -> "0" , Reserved.*/
 /*-------------------------------------------------------------------*/
 /* Temperautre raw data LSB*/
-#define BMP280_TEMPERAUTRE_LSB_DATA				(0xFB)		
+#define BMP280_TEMPERAUTRE_LSB_DATA			(0xFB)		
 /*bit 7:0 -> LSB DATA */
 /*-------------------------------------------------------------------*/
 /* Temperautre raw data MSB*/
@@ -168,29 +164,30 @@ typedef struct BMP280_PRESS_TEMPREATURE_DATA_S
 /*bit 7:0 -> MSB DATA*/
 /*-------------------------------------------------------------------*/
 /* control BMP280 data speed*/
-#define BMP280_CONFIG								(0xF5)
-//bit 7:5 -> t_sb,set the standby time (only Normal).
-//Controls inactive duration tstandby in normal mode
-// 7 6 5    tstandby[ms] 
-// 0 0 0		0.5
-// 0 0 1		62.5
-// 0 1 0 		125
-// 0 1 1		250
-// 1 0 0		500
-// 1 0 1		1000
-// 1 1 0		2000
-// 1 1 1		4000
-//----------------------------
-//bit 4:2 -> filter,controls the time constant of IIR filter
-// 4 3 2			Filter coefficient		Bandwidth
-// 0 0 0			filter off				FULL
-// 0 0 1			2						0.223 * ODR
-// 0 1 0			4						0.092 * ODR
-// 0 1 1			8						0.042 * ODR
-// 1 0 0 ,other		16						0.021 * ODR
-//----------------------------
-//bit 0 -> Eanble 3-wire SPI,if set "1"
-
+#define BMP280_CONFIG									(0xF5)
+/*
+	bit 7:5 -> t_sb,set the standby time (only Normal).
+	Controls inactive duration tstandby in normal mode
+	 7 6 5    tstandby[ms] 
+	0 0 0		0.5
+	0 0 1		62.5
+	0 1 0 		125
+	0 1 1		250
+	1 0 0		500
+	1 0 1		1000
+	1 1 0		2000
+	1 1 1		4000
+	----------------------------
+	bit 4:2 -> filter,controls the time constant of IIR filter
+	4 3 2			Filter coefficient		Bandwidth
+	0 0 0			filter off				FULL
+	0 0 1			2						0.223 * ODR
+	0 1 0			4						0.092 * ODR
+	0 1 1			8						0.042 * ODR
+	1 0 0 ,other		16						0.021 * ODR
+	----------------------------
+	bit 0 -> Eanble 3-wire SPI,if set "1"
+*/
 /*-------------------------------------------------------------------*/
 /*
 	control BMP280 measurement mode & system mode
@@ -278,36 +275,46 @@ CHAR8S BMP280_GET_ID(CHAR8U *BMP280_ID);
 CHAR8S BMP280_SET_RESET(void);
 /*--------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------*/
-// get the BMP280 status , read register 0xF3 
-// check bit 3 & 0 .
-// ** before read data , the status register bit3 & bit0 must be "0"!!
+/*
+	get the BMP280 status , read register 0xF3 
+	check bit 3 & 0 .
+	** before read data , the status register bit3 & bit0 must be "0"!!
+*/
 CHAR8S BMP280_GET_STATUS(CHAR8U *REG_STATUS);
 /*--------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------*/
-// set temperature measurement mode & pressure measurement mode & system mode
-// use define parameter : BMP280_TEMPERAUTRE_MODE , BMP280_PRESS_MODE , BMP280_SYS_MODE
-// Example :  BMP180_SET_MEASUREMENT_SYS_MODE(BMP280_TEMPERAUTRE_MODE|BMP280_PRESS_MODE|BMP280_SYS_MODE);
+/*
+	set temperature measurement mode & pressure measurement mode & system mode
+	use define parameter : BMP280_TEMPERAUTRE_MODE , BMP280_PRESS_MODE , BMP280_SYS_MODE
+	Example :  BMP180_SET_MEASUREMENT_SYS_MODE(BMP280_TEMPERAUTRE_MODE|BMP280_PRESS_MODE|BMP280_SYS_MODE);
+*/
 CHAR8S BMP280_SET_MEASUREMENT_SYS_MODE(CHAR8U SET_MODE);
 /*--------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------*/
-// set the Normal mode need Tstandby time & IIR filter mode
-// use define parameter : BMP280_IIR_MODE , BMP280_STANDBY_TIME_SET
-// Example :  BMP180_SET_MEASUREMENT_SYS_MODE(BMP280_STANDBY_TIME_SET|BMP280_IIR_MODE);
+/*
+	set the Normal mode need Tstandby time & IIR filter mode
+	use define parameter : BMP280_IIR_MODE , BMP280_STANDBY_TIME_SET
+	Example :  BMP180_SET_MEASUREMENT_SYS_MODE(BMP280_STANDBY_TIME_SET|BMP280_IIR_MODE);
+*/
 CHAR8S BMP280_SET_STANDBY_IIR_FILTER_MODE(CHAR8U SET_FILTER_MODE);
 /*--------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------*/
-// set measurment mode & system mode to read raw data(temperature & pressure).
-// register 0x88~0X9F -> calibration data
+/*
+	set measurment mode & system mode to read raw data(temperature & pressure).
+	register 0x88~0X9F -> calibration data
+*/
 CHAR8S BMP280_GET_CALIBRATION_DATA(BMP280_CALCULATION_PARAMETER *CAL_DATA);
 /*--------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------*/
-// set measurment mode & system mode to read raw data(temperature & pressure).
-// temperature data : 0xFA(MSB)~0xFC(XLSB)
-// pressure data 	: 0xF7(MSB)~0xF9(XLSB)
+/*
+	set measurment mode & system mode to read raw data(temperature & pressure).
+	temperature data : 0xFA(MSB)~0xFC(XLSB)
+	pressure data 	: 0xF7(MSB)~0xF9(XLSB)
+*/
 CHAR8S BMP280_GET_RAW_DATA(BMP280_PRESS_TEMPREATURE_DATA *RAW_DATA);
 /*--------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------*/
-// to calculate the temperature & pressure data
+/* to calculate the temperature & pressure data*/
 CHAR8S BMP280_GET_CALCULATE_DATA(BMP280_PRESS_TEMPREATURE_DATA *FINAL_DATA,BMP280_PRESS_TEMPREATURE_DATA RAW_DATA,BMP280_CALCULATION_PARAMETER CAL_DATA);
 /*--------------------------------------------------------------------------------------------------*/
 /* Calculate the sea level pressure */
@@ -317,6 +324,6 @@ void BMP280_GET_SEALEVEL_PRESSURE(FLOAT altitude,FLOAT pressure_data,FLOAT *sea_
 /* Calculate the altitude */
 void BMP280_GET_ALTITUDE(FLOAT pressure_data,FLOAT *altitude_result);
 /*--------------------------------------------------------------------------------------------------*/
-//********************************************* SYSTEM *************************************************
+/********************************************** SYSTEM **************************************************/
 
-#endif		 //#ifndef __BMP280_HEADER__  
+#endif		 /*#ifndef __BMP280_HEADER__  */

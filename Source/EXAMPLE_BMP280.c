@@ -5,16 +5,15 @@
      Function		: EXAMPLE_BMP280
      Create Date	: 2020/05/31
 ---------------------------------------------------------------------- */
-#ifndef __BMP280_EXAMPLE__
-#define __BMP280_EXAMPLE__
-
 #include <stdio.h>
 #include <delay.h>
 #include <math.h>
 #include <i2c.h>
 #include <alcd.h>
-#include "SENSOR_BMP280.h"
-#include "Porting_Layer.h"
+#include <datatype_Layer.h>
+#include <swi2c_Layer.h>
+#include <SENSOR_BMP280.h>
+
 
 BMP280_PRESS_TEMPREATURE_DATA	BMP280_RAW_DATA,BMP280_DATA;	/*raw data & final data	*/
 BMP280_CALCULATION_PARAMETER 	BMP280_CALIB_DATA;				/*Calibration Coefficients */
@@ -231,5 +230,3 @@ void EXAMPLE_BMP280(void)
 
 		}
 }
-		
-#endif		//#ifndef __BMP280_EXAMPLE__

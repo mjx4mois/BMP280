@@ -6,18 +6,19 @@
      Create Date	: 2018/04/06
      
 ---------------------------------------------------------------------- */
-#ifndef __BMP280_FUNCTION__ 
-#define __BMP280_FUNCTION__  
 
 #include <stdio.h>
 #include <math.h>
 #include <delay.h>
+#include <datatype_Layer.h>
+#include <swi2c_Layer.h>
+#include <SENSOR_BMP280.h>
 
-#include "SENSOR_BMP280.h"
-#include "Porting_Layer.h"
 
 
-//********************************************* SYSTEM *************************************************
+#define SENSOR_BMP280_DEBUG		(0)			/*IF set "1" enable debug , print information*
+
+/********************************************* SYSTEM **************************************************/
 /*--------------------------------------------------------------------------------------------------*/
 /*
 	initial BMP280 , check the status  
@@ -250,7 +251,7 @@ CHAR8S BMP280_GET_CALIBRATION_DATA(BMP280_CALCULATION_PARAMETER *CAL_DATA)
 		CAL_DATA->dig_P8 = (INT32S) ( (BMP_CAL_COFF_ARRAY[21]<<8) + BMP_CAL_COFF_ARRAY[20]);
 		CAL_DATA->dig_P9 = (INT32S) ( (BMP_CAL_COFF_ARRAY[23]<<8) + BMP_CAL_COFF_ARRAY[22]);
 
-#if BMP280_DEBUG
+#if SENSOR_BMP280_DEBUG
 		
 		for(count=0;count<24;count++)
 		{
@@ -377,7 +378,7 @@ CHAR8S BMP280_GET_RAW_DATA(BMP280_PRESS_TEMPREATURE_DATA *RAW_DATA)
 
 			/*set the temperature raw data to variable*/
 
-			#if BMP280_DEBUG
+			#if SENSOR_BMP280_DEBUG
 			printf("Reg 0xFA = 0x%X;Reg 0xFB = 0x%X;Reg 0xFC = 0x%X; \r\n", temp_data[0],temp_data[1],temp_data[2]);
 			printf("temperature raw data = 0x%lx(Dec:%ld)\r\n",temp_raw_data,temp_raw_data);
 			#endif
@@ -397,7 +398,7 @@ CHAR8S BMP280_GET_RAW_DATA(BMP280_PRESS_TEMPREATURE_DATA *RAW_DATA)
 			/*temp_data[0] -> MSB , temp_data[1] -> LSB , temp_data[2] -> XLSB*/
 			temp_raw_data = (INT32S)(((INT32S)temp_data[0]<<12) | ((INT32S)temp_data[1]<<4) | ((INT32S)temp_data[2]>>4));
 
-			#if BMP280_DEBUG
+			#if SENSOR_BMP280_DEBUG
 			printf("Reg 0xF7 = 0x%X;Reg 0xF8 = 0x%X;Reg 0xF9 = 0x%X; \r\n", temp_data[0],temp_data[1],temp_data[2]);
 			printf("pressure raw data = 0x%lx(Dec:%ld)\r\n",temp_raw_data,temp_raw_data);
 			#endif
@@ -415,11 +416,11 @@ CHAR8S BMP280_GET_RAW_DATA(BMP280_PRESS_TEMPREATURE_DATA *RAW_DATA)
 /* to calculate the temperature & pressure data*/
 CHAR8S BMP280_GET_CALCULATE_DATA(BMP280_PRESS_TEMPREATURE_DATA *FINAL_DATA,BMP280_PRESS_TEMPREATURE_DATA RAW_DATA,BMP280_CALCULATION_PARAMETER CAL_DATA)
 {
-		INT32S final_temp_data;
-		INT32U final_press_data;
-		INT32S temp_raw_data,press_raw_data;
-		INT32S X1=0,X2=0,X11,X12,X21,X22,X31,X32;
-		INT32S Y1=0,Y2=0;	
+	INT32S final_temp_data;
+	INT32U final_press_data;
+	INT32S temp_raw_data,press_raw_data;
+	INT32S X1=0,X2=0,X11,X12,X21,X22,X31,X32;
+	INT32S Y1=0,Y2=0;	
 
 
 		/*---------------------------- TEMPERATURE CALCULATE --------------------------*/
@@ -440,7 +441,7 @@ CHAR8S BMP280_GET_CALCULATE_DATA(BMP280_PRESS_TEMPREATURE_DATA *FINAL_DATA,BMP28
 		/*NOTE: example if FINA_TEMP=5123 -> 51.23 C*/
 		/*FINAL TERMPERATURE DATA*/
 		FINAL_DATA->final_temperature = (FLOAT)((final_temp_data * 5 +128) >>8)/100;
-		#if BMP280_DEBUG
+		#if SENSOR_BMP280_DEBUG
 		printf("final temperature data = %f C\r\n",FINAL_DATA->final_temperature);
 		#endif
 		
@@ -461,11 +462,11 @@ CHAR8S BMP280_GET_CALCULATE_DATA(BMP280_PRESS_TEMPREATURE_DATA *FINAL_DATA,BMP28
 		final_press_data= (((INT32U)(((INT32S)1048576)-(INT32U)press_raw_data)-(Y2>>12)))*3125;
 		if (final_press_data < 0x80000000)
 		{
-		final_press_data = (final_press_data<< 1) / ((INT32U)Y1);
+			final_press_data = (final_press_data<< 1) / ((INT32U)Y1);
 		}
 		else
 		{
-		final_press_data = (final_press_data/ (INT32U)Y1) * 2;
+			final_press_data = (final_press_data/ (INT32U)Y1) * 2;
 		}
 		Y1 = (((INT32S)CAL_DATA.dig_P9) * ((INT32S)(((final_press_data>>3) * (final_press_data>>3))>>13)))>>12;
 		Y2 = (((INT32S)(final_press_data>>2)) * ((INT32S)CAL_DATA.dig_P8))>>13;
@@ -476,7 +477,8 @@ CHAR8S BMP280_GET_CALCULATE_DATA(BMP280_PRESS_TEMPREATURE_DATA *FINAL_DATA,BMP28
 	
 		//FINAL_DATA->press_data = final_press_data;
 		FINAL_DATA->final_press = (FLOAT)final_press_data/100;
-		#if BMP280_DEBUG
+		
+		#if SENSOR_BMP280_DEBUG
 		printf("final pressure data = %f  hPa\r\n",FINAL_DATA->final_press );
 		#endif
 		
@@ -491,14 +493,14 @@ void BMP280_GET_ALTITUDE(FLOAT pressure_data,FLOAT *altitude_result)
 {
 	FLOAT alt_temp1,alt_temp2,alt_temp3,alt_temp4,alt_temp5;
 	
-        /* Calculating absolute altitude  */
-        alt_temp1 = ((FLOAT)pressure_data/101325);
-        alt_temp2 = (1/5.255);
-        alt_temp3 = pow(alt_temp1,alt_temp2);
-        alt_temp4 = (1 - alt_temp3);
-        alt_temp5 = 44330.0 *(alt_temp4);	/*altitude result*/
-      
- 	*altitude_result = alt_temp5;		/* Final altitude*/
+	        /* Calculating absolute altitude  */
+	        alt_temp1 = ((FLOAT)pressure_data/101325);
+	        alt_temp2 = (1/5.255);
+	        alt_temp3 = pow(alt_temp1,alt_temp2);
+	        alt_temp4 = (1 - alt_temp3);
+	        alt_temp5 = 44330.0 *(alt_temp4);	/*altitude result*/
+	      
+	 	*altitude_result = alt_temp5;		/* Final altitude*/
 }
 /*--------------------------------------------------------------------------------------------------*/
 /* Calculate the altitude */      
@@ -506,16 +508,14 @@ void BMP280_GET_SEALEVEL_PRESSURE(FLOAT altitude,FLOAT pressure_data,FLOAT *sea_
 {
 	FLOAT alt_temp6,alt_temp7,alt_temp8,alt_temp9,alt_temp10;
 	
-        /* Calculating pressure at sea level  */
-        alt_temp6 = ((FLOAT)altitude/44330.0);
-        alt_temp7 = (1 - alt_temp6);
-        alt_temp8 = pow(alt_temp7,5.255);
-        alt_temp9 = (pressure_data /alt_temp8);
-        alt_temp10 = alt_temp9;      
-        
-	*sea_level_pressure = alt_temp10;		/* Final sea level*/
+	        /* Calculating pressure at sea level  */
+	        alt_temp6 = ((FLOAT)altitude/44330.0);
+	        alt_temp7 = (1 - alt_temp6);
+	        alt_temp8 = pow(alt_temp7,5.255);
+	        alt_temp9 = (pressure_data /alt_temp8);
+	        alt_temp10 = alt_temp9;      
+	        
+		*sea_level_pressure = alt_temp10;		/* Final sea level*/
 }
 /*--------------------------------------------------------------------------------------------------*/      
-//********************************************* SYSTEM *************************************************
-
-#endif		 //#ifndef __BMP280_HEADER__  
+/********************************************* SYSTEM **************************************************/

@@ -21,14 +21,10 @@ External RAM size       : 0
 Data Stack size         : 512
 *******************************************************/
 
-
 #include <mega32a.h>
-
 #include <delay.h>
 #include <math.h>
-
-
-#include "SENSOR_BMP280.h"
+#include <SENSOR_BMP280.h>
 
 // I2C Bus functions
 #include <i2c.h>
@@ -303,10 +299,9 @@ lcd_init(16);
 // Global enable interrupts
 #asm("sei")
 
-while (1)
-      {
-      // Place your code here          
- 	EXAMPLE_BMP280();       
-                    
-      }
+	while (1)
+	{
+		// Place your code here          
+		EXAMPLE_BMP280();                      
+	}
 }
